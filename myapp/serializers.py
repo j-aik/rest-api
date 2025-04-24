@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import Item,Todo,Number
 from django.contrib.auth.models import User
-
+from .models import SavedPicture
 
 class ItemSerializer(serializers.ModelSerializer):
     class Meta:
@@ -13,6 +13,14 @@ class TodoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Todo
         fields = '__all__'
+
+class SavedPictureSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+
+    class Meta:
+        model = SavedPicture
+        fields = ['id', 'user', 'username', 'image', 'uploaded_at']
+        read_only_fields = ['uploaded_at']
 
 
 class NumberSerializer(serializers.ModelSerializer):

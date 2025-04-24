@@ -1,12 +1,13 @@
 from django.shortcuts import render
-
+from rest_framework.permissions import IsAuthenticated
 # Create your views here.
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Item,Todo,Number
-from .serializers import ItemSerializer,TodoSerializer ,NumberSerializer
-
+from .models import Item,Todo,Number,SavedPicture
+from .serializers import ItemSerializer,TodoSerializer ,NumberSerializer,SavedPictureSerializer
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 @api_view(['GET', 'PUT' ,'POST'])
 def index1(request):
     item = Item.objects.all()
@@ -157,14 +158,11 @@ from .serializers import CustomTokenObtainPairSerializer
 
 @api_view(['POST'])
 def custom_token_obtain_pair(request):
-    # Deserialize the incoming data with the custom serializer
     serializer = CustomTokenObtainPairSerializer(data=request.data)
 
     if serializer.is_valid():
 
         token = serializer.validated_data['access']
-
-        # You can add custom claims or modify the token here if needed
 
         return Response({
             'access': token,
@@ -172,3 +170,19 @@ def custom_token_obtain_pair(request):
         })
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def saved_picture_view(request):
+    if request.method == 'GET':
+        pictures = SavedPicture.objects.filter(user=request.user)
+        serializer = SavedPictureSerializer(pictures, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = SavedPictureSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

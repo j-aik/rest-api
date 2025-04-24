@@ -28,3 +28,13 @@ class Number(models.Model):
 
     def __str__(self):
         return f"Todo {self.number}"  # Optional: Returns number as the title
+
+
+class SavedPicture(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='saved_pictures')
+    image = models.ImageField(upload_to='saved_pictures/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Picture by {self.user.username}"
+
